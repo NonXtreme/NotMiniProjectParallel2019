@@ -13,19 +13,38 @@ app.listen(3000, function (err) {
   })
 
 io.on('connection', function (socket) {
-    socket.on('createGroup',function(){
-        
-    })
+  socket.on('createGroup',function(data){
+    console.log("Creating group "+data.group_ID+" "+data.groupname);
+    let query = 'INSERT INTO group_(group_ID,groupname) values(?,?)';
+    connection.query(query, [data.group_ID,data.groupname], (error, result) => {
+        if (error) throw error
+        console.log('create group success!!!');
+    });
+})
     socket.on('register', function(){
         
     })
   
-    socket.on('joinGroup', function(){
-        
-    })
+    socket.on('joinGroup', function(data){
+      console.log("Creating group "+data.user_ID+" "+data.group_ID);
+      let query = 'INSERT INTO join_(user_ID,group_ID) values(?,?)';
+      connection.query(query, [data.user_ID,data.group_ID], (error, result) => {
+          if (error) throw error
+          //TODO socket room?
+          io.to(data.group_ID).emit("groupJoined",data);
+          console.log('Join group success!!!');
+      });
+  })
   
-    socket.on('leaveGroup', function(){
-        
+    socket.on('leaveGroup', function(data){
+      console.log("Leaving group "+data.user_ID+" "+data.group_ID);
+      let query = 'DELETE FROM join_ WHERE user_ID=? and group_ID=?';
+      connection.query(query, [data.user_ID,data.group_ID], (error, result) => {
+          if (error) throw error
+          //TODO socket room?
+          io.to(data.group_ID).emit("groupLeft",data);
+          console.log('Leave group success!!!');
+      });
     })
   
     socket.on('message', function(msg){
