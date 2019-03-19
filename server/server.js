@@ -28,7 +28,21 @@ io.on('connection', function (socket) {
         
     })
   
-    socket.on('message', function(){
+    socket.on('message', function(msg){
+      //have msg.content msg.username msg.groupname msg.user_ID msg.group_ID
+
+      // get time
+      var mysqlTimestamp = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+
+      //inset to table 
+      let query = 'INSERT INTO message(content, time_stamp, user_ID, group_ID) VALUES (?,?,?,?)'
+      connection.query(query, [msg.content, mysqlTimestamp, msg.user_ID,  msg.group_ID],  function(err,results){
+        if(err) throw err
+        //if inserted then ok
+      })
+      //!!!!!!!!!!!!TO-DO will we use groupnaem or group_ID as a socket room????!!!!!!!!!!!!
+      io.to(msg.group_ID).emit('message', msg.username + " : " + msg.txt )
+
         
     })
 
