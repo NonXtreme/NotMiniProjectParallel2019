@@ -19,9 +19,11 @@ const connection = mysql.createConnection({
 app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname, "../client/page.html"));
 });
-http.listen(3000, function (err) {
+
+let port = parseInt(process.argv[2])
+http.listen(port, function (err) {
   if (err) throw err
-  console.log('listening on port 3000')
+  console.log('listening on port ' + port)
 })
 
 io.on('connection', function (socket) {
