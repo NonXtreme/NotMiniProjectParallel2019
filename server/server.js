@@ -252,7 +252,7 @@ io.on('connection', function (socket) {
 
   socket.on('disconnect', function () {
     console.log('client disconnect...', socket.id)
-    handleDisconnect()
+    //handleDisconnect()
   })
 
   socket.on('error', function (err) {

@@ -2,22 +2,22 @@ action : 'getAllGroup'
 No params
 
 action : 'getJoinedGroup'
-params : userID
+params : userName
 
 action : 'getGroupChat'
-params : groupID, ack
+params : groupName, ack
 
 action : 'createGroup'
-params : groupID, userID
+params : groupName, userName
 
 action : 'joinGroup'
-params : userID, groupID
+params : userName, groupName
 
 action : 'leaveGroup'
-params : userID, groupID
+params : userName, groupName
 
 action : 'sendMessage'
-params : userID, message, groupID
+params : userName, message, groupName
 
 action : 'login'
-params : userID
+params : userName
