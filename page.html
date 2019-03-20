@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CHAT</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" crossorigin="anonymous">
+</head>
+<body>
+  <div class="modal" tabindex="-1" role="dialog" id="enterUsernameModal">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Enter username</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <input type="text" id="usernameField" onkeydown="login0(event)" autofocus class="form-control" />
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="login()">Login</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class=" d-flex flex-column h-100">
+      <div class="d-flex toolbar" style="flex: 0 5%">
+        <div class="logo">Welcome, <span id="usernameSpan"></span></div>
+        <div class="ml-auto">Status: <span id="statusSpan">NO</span> </div>
+      </div>
+      <div class="row" style="flex-basis: 95%;">
+        <div class="col-md-3 sidebar">
+          <h4>Group List</h4>
+          <div id="myGroupResult"></div>
+          <script>displayGroups()</script>
+          <input type="text" id="groupNameField" name="gn" placeholder="enter name here...">
+          <button class="btn btn-info btn-block" onclick="createGroup()">Add group</button>
+        </div>
+        <div class="col-md-9 d-flex flex-column">
+          <h4><strong id="groupNameResult">Group Name</strong></h4>
+          <div id="chatArea" class="clearfix flex-grow-1 chatStyle">
+            <div class="d-flex flex-column justify-content-center align-items-center h-100">
+              <div style="font-size: 20em; color: #231C3B; font-size: 1.6em;">Select one of the groups from the list</div>
+            </div>
+            
+          </div>
+          <div class="d-flex">
+            <input type="text" class="flex-grow-1" onkeydown="sendMessage0(event)" id="messageField" placeholder="Type here...">
+            <button class="btn btn-success btn-lg buttonStyle" style="background-color:#BE7DB7!important; border: none!important;" onclick="sendMessage()">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+</body>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.0/socket.io.js" crossorigin="anonymous"></script>
+  <script>
+    $("#enterUsernameModal").modal()
+    var socket = io('ws://10.202.237.14:8001/');  //must be considered again
+    var userID = null
+      var groupID = null
+      var joinedGroup = []
+      var groupJoinedStatus = {}
+      var ack = {}
+      var chat = {}
+      var unreadCount = {}
+      setInterval(updateGroupList,1000)
+      setInterval(updateGroupChat,300)
+      socket.on('connect', (e) => {
+        console.log("Connection successful");
+        $("#statusSpan").html("CONNECTED");
+      })
+
+
+      function displayGroups(){
+        $('#groupListResult').empty()
+        $.each(groupJoinedStatus, function(key, value) {
+         if(value === true)  //for joined groups
+         {
+            $('#groupListResult').append(`<div><span style="cursor:pointer; border:1px solid black; padding:5px; margin:5px;" onclick="selectGroup('${key}')">${key}(${unreadCount[key]})<span>
+               <span style="cursor:pointer;" class="float-right" onclick="leaveGroup('${key}')">Leave Group</span>
+               </div>`)
+         }
+         else  //for non-joined groups
+         {
+            $('#groupListResult').append(`<div style="cursor:pointer; border:1px solid black; padding:5px; margin:5px;" onclick="requestJoinGroup('${key}')">${key}</div>`)
+         } 
+        });
+      }
+       
+      function updateGroupList(){
+        if(username===null) return
+        
+        socket.emit('getAllGroup', {
+        },x=>{
+          console.log(x)
+          x.result.map(y=>y['group_id']).forEach(y=>{
+          groupJoinedStatus[y] = false
+          })
+        });
+         
+          socket.emit('getJoinedGroup', {
+          userID: userID,
+        },x=>{
+          console.log(x)
+          $('#myGroupResult').empty()
+          joinedGroup = x.result.map(y=>y['group_id'])
+          joinedGroup.forEach(y=>{
+            if(unreadCount[y] === undefined){
+              unreadCount[y] = 0
+            }
+            groupJoinedStatus[y] = true
+          })
+        });
+          displayGroups()
+      }
+
+
+      function render(y) //generate messages
+      {
+        let d = new Date(y.message_timestamp)
+        $('#chatArea').append(`<div class="${y.message_sender==username?'my':'your'}">
+            <span class="username" style="font-weight:900">${y.message_sender} &nbsp;</span> <span class="message">${y.message_text}</span> <span class="timestamp">${d.toLocaleTimeString()}</span>
+          </div>`)
+        $('#chatArea').animate({scrollTop: 999999999999999},30)
+      }
+
+      function updateGroupChat(){
+        if(username===null)return
+        joinedGroup.forEach(gid_=>{
+          let gid = gid_
+          if(ack[gid] === undefined) ack[gid]=-1
+          socket.emit('getGroupChat', {
+            groupID: gid,
+            ack: ack[gid]
+          },x=>{
+            if(chat[gid] === undefined) chat[gid]=[]
+            console.log(x)
+            x.result.forEach(y=>{
+              if(y.message_id <= ack[gid]) return
+              chat[gid].push(y)  
+              ack[gid]= y.message_id
+              if(gid === groupID) render(y)
+              else
+              {
+                unreadCount[gid]++;
+              }
+            })
+          })
+        })
+      }
+
+      function createGroup(){
+        let name=$('#groupNameField').val()
+        socket.emit('createGroup', {
+          groupID: name,
+          userID: userID
+        },x=>{
+          console.log(x)
+        });
+        updateGroupList()
+        selectGroup(gid)
+      }
+      
+      function selectGroup(gid){
+        groupID = gid
+        $('#chatArea').html('')
+        chat[gid].forEach(x=>render(x))
+        $('#groupNameResult').html(gid)
+        unreadCount[gid] = 0;
+      }
+      
+      function requestJoinGroup(gid)
+      {
+         $('#groupNameResult').html('Join Group ?')
+         $('#chatArea').html('<div class="d-flex flex-column justify-content-center align-items-center h-100"><button class="btn btn-info btn-block" style="margin-top:10px; border:none !important; background-color:#BE7DB7!important;" onclick="joinGroup(gid)">Join!</button></div>')
+      }
+
+      function joinGroup(gid){
+        socket.emit('joinGroup', {
+          userID: userID,
+          groupID: gid
+        },x=>{
+          console.log(x)
+          ack[gid] = -1
+          chat[gid] = []
+          unreadCount[gid]= 0
+        });
+        updateGroupList()
+        selectGroup(gid)
+      }
+
+      function leaveGroup(gid){
+        socket.emit('leaveGroup', {
+          userID: userID,
+          groupID: gid
+        },x=>{
+          console.log(x)
+          groupID = null
+
+          $('#groupNameResult').html('-')
+          $('#chatArea').html(`<div class="d-flex flex-column justify-content-center align-items-center h-100">
+                <div style="font-size: 20em; color: #231C3B; font-size: 1.6em;">Select one of the groups from the list</div>
+              </div>`)
+        });
+      }
+
+      function sendMessage(){
+        let message=$('#messageField').val()
+        if(message.length == 0) return;
+        socket.emit('sendMessage', {
+          userID: userID,
+          message: message,
+          groupID: groupID
+        },x=>{
+          console.log(x)
+          $('#messageField').val('')
+        });
+      }
+
+      function login() {
+        userID = $("#usernameField").val();
+        $("#usernameSpan").html(userID);
+        socket.emit('login', {
+          userID: userID,
+        },x=>{
+          console.log(x)
+        });
+      }
+
+      function login0(e){
+      if (event.keyCode === 13) {
+        $('#enterUsernameModal').modal('toggle');
+        login()
+      }
+    }
+
+    function sendMessage0(event){
+      if (event.keyCode === 13) sendMessage()
+    }
+  </script>
+</html>
+
