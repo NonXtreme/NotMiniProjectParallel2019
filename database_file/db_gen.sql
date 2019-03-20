@@ -20,7 +20,7 @@ create table join_(
   constraint FK_join2 foreign key (group_ID) references group_(group_ID)
 );
 create table message(
-  msg_ID varchar(6) primary key auto_increment,
+  msg_ID int(6) primary key auto_increment,
   content varchar(200),
   time_stamp timestamp,
   user_ID int,
