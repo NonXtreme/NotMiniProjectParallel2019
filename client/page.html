@@ -69,8 +69,8 @@
     var chat = {}
     var unreadCount = {}
     var requestingJoin = false
-      setInterval(updateGroupList,3000)
-      setInterval(updateGroupChat,3000)
+      setInterval(updateGroupList,1000)
+      setInterval(updateGroupChat,300)
       socket.on('connect', (e) => {
         console.log("Connection successful");
         $("#statusSpan").html("CONNECTED");
@@ -124,17 +124,17 @@
 
       function render(y) //generate messages
       {
-        let d = new Date(y.message_timestamp)
-        $('#chatArea').append(`<div class="${y.message_sender==userName?'my':'your'}">
-            <span class="username" style="font-weight:900">${y.message_sender} &nbsp;</span> <span class="message">${y.message_text}</span> <span class="timestamp">${d.toLocaleTimeString()}</span>
+        let d = new Date(y.time_stamp)
+        $('#chatArea').append(`<div class="${y.username==userName?'my':'your'}">
+            <span class="username" style="font-weight:900">${y.username} &nbsp;</span> <span class="message">${y.content}</span> <span class="timestamp">${d.toLocaleTimeString()}</span>
           </div>`)
         $('#chatArea').animate({scrollTop: 999999999999999},30)
       }
 
       function updateGroupChat(){
-        if(userName===null)return
-        if(requestingJoin === false) $('#chatArea').html('')
+        if(userName===null) return
         console.log("joinedGroup", joinedGroup)
+        console.log("Chats", chat)
         joinedGroup.forEach(gid_=>{
           let gid = gid_
           if(ack[gid] === undefined) ack[gid]=-1
@@ -143,11 +143,13 @@
             ack: ack[gid]
           },x=>{
             if(chat[gid] === undefined) chat[gid]=[]
-            console.log(x)
+            console.log(x.result)
             x.result.forEach(y=>{
-              if(y.message_id <= ack[gid]) return
+              console.log(y)
+              console.log(y.msg_ID, ack[gid])
+              if(y.msg_ID <= ack[gid]) return
               chat[gid].push(y)  
-              ack[gid]= y.message_id
+              ack[gid] = y.msg_ID
               if(gid === groupName && requestingJoin === false) render(y)
               else
               {
