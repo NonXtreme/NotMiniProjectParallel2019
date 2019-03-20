@@ -68,8 +68,8 @@
     var ack = {}
     var chat = {}
     var unreadCount = {}
-      setInterval(updateGroupList,1000)
-      setInterval(updateGroupChat,300)
+      setInterval(updateGroupList,3000)
+      setInterval(updateGroupChat,3000)
       socket.on('connect', (e) => {
         console.log("Connection successful");
         $("#statusSpan").html("CONNECTED");
@@ -79,6 +79,7 @@
       function displayGroups(){
         $('#groupListResult').empty()
         $.each(groupJoinedStatus, function(key, value) {
+         if(key === "") return 
          if(value === true)  //for joined groups
          {
             $('#groupListResult').append(`<div><span style="cursor:pointer; border:1px solid black; padding:5px; margin:5px;" onclick="selectGroup('${key}')">${key}(${unreadCount[key]})<span>
@@ -98,17 +99,18 @@
         socket.emit('getAllGroup', {
         },x=>{
           console.log(x)
-          x.result.map(y=>y['group_id']).forEach(y=>{
+          x.result.map(y=>y['groupname']).forEach(y=>{
+          console.log("y = ",y)
           groupJoinedStatus[y] = false
           })
         });
-         
+         //.map(y=>y['group_id'])
           socket.emit('getJoinedGroup', {
           userName: userName,
         },x=>{
           console.log(x)
           $('#myGroupResult').empty()
-          joinedGroup = x.result.map(y=>y['group_id'])
+          joinedGroup = x.result.map(y=>y['groupname'])
           joinedGroup.forEach(y=>{
             if(unreadCount[y] === undefined){
               unreadCount[y] = 0
@@ -116,6 +118,7 @@
             groupJoinedStatus[y] = true
           })
         });
+          console.log(groupJoinedStatus)
           displayGroups()
       }
 
@@ -157,7 +160,7 @@
       function createGroup(){
         let gid=$('#groupNameField').val()
         socket.emit('createGroup', {
-          groupName: name,
+          groupName: gid,
           userName: userName
         },x=>{
           console.log(x)
@@ -181,7 +184,7 @@
       function requestJoinGroup(gid)
       {
          $('#groupNameResult').html('Join Group ?')
-         $('#chatArea').html('<div class="d-flex flex-column justify-content-center align-items-center h-100"><button class="btn btn-info btn-block" style="margin-top:10px; border:none !important; background-color:#BE7DB7!important;" onclick="joinGroup(gid)">Join!</button></div>')
+         $('#chatArea').html('<div class="d-flex flex-column justify-content-center align-items-center h-100"><button class="btn btn-info btn-block" style="margin-top:10px; border:none !important; background-color:#BE7DB7!important;" onclick="joinGroup('${gid}')">Join!</button></div>')
       }
 
       function joinGroup(gid){
