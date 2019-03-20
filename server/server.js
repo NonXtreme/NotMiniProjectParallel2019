@@ -31,7 +31,7 @@ const connectionPool = mysql.createPool({
 // }
 
 app.get('/', function (req, res) {
-  res.send("Hello");
+  res.send('hello');
 });
 app.listen(3000, function (err) {
   if (err) throw err
