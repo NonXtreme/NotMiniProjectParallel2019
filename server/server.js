@@ -14,24 +14,6 @@ const connection = mysql.createConnection({
   database: 'parallel_db'
 })
 
-// function query(sql, params) {
-//   connectionPool.getConnection(function (err, connection) {
-
-//     connection.query('START TRANSACTION', function (err, rows) {
-
-//       connection.query(sql, params, (error, results) => {
-//         if (error) throw error;
-//         console.log(result);
-//       });
-//     });
-
-//     connection.query('COMMIT', function (err, rows) {
-//       connection.release();
-//     });
-
-//   });
-// }
-
 app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname, "../client/page.html"));
 });
@@ -65,21 +47,6 @@ io.on('connection', function (socket) {
 
     });
 
-    //   connectionPool.getConnection(function (err, connection) {
-    //     connection.query('START TRANSACTION', function (err, rows) {
-    //       connection.query(query, [data.groupName, data.groupname], (error, result) => {
-    //         if (error) throw error;
-    //         console.log(result);
-    //         callback({status:"SUCCESS", result:result});
-    //         console.log('create group success!!!');
-    //       });
-    //     });
-    //     connection.query('COMMIT', function (err, rows) {
-    //       connection.release();
-    //     });
-    //   });
-
-
   })
 
   socket.on('login', function (data, callback) {
@@ -102,47 +69,11 @@ io.on('connection', function (socket) {
         console.log('User already exist and login success!!!');
       }
     });
-
-
-
-    // connectionPool.getConnection(function (err, connection) {
-    //   onsole.log("Bftrans");
-    //   connection.query('START TRANSACTION', function (err, rows) {
-    //     connection.query(query, [data.userName], (error, result) => {
-    //       if (error) throw error;
-    //       console.log(result);
-    //       callback({status:"SUCCESS", result:result});
-    //       console.log('Login success!!!');
-    //     });
-    //   });
-    //   connection.query('COMMIT', function (err, rows) {
-    //     connection.release();
-    //   });
-    // });
-
-
   })
 
   socket.on('joinGroup', function (data, callback) {
     console.log("Joining group " + data.userName + " " + data.groupName);
     let query = 'INSERT INTO join_(username,groupname) values(?,?)';
-
-    // connectionPool.getConnection(function (err, connection) {
-    //   connection.query('START TRANSACTION', function (err, rows) {
-    //     connection.query(query, [data.userName, data.groupName], (error, result) => {
-    //       if (error) throw error;
-    //       console.log(result);
-    //       //TODO socket room?
-    //       socket.join(data.groupName);
-    //       callback({status:"SUCCESS", result:result});
-    //       // io.to(data.groupName).emit("joinGroup", data);
-    //       console.log('Join group success!!!');
-    //     });
-    //   });
-    //   connection.query('COMMIT', function (err, rows) {
-    //     connection.release();
-    //   });
-    // });
 
     connection.query(query, [data.userName, data.groupName], (error, result) => {
       if (error) throw error
@@ -157,23 +88,6 @@ io.on('connection', function (socket) {
     console.log("Leaving group " + data.userName + " " + data.groupName);
     let query = 'DELETE FROM join_ WHERE username=? and groupname=?';
 
-    // connectionPool.getConnection(function (err, connection) {
-    //   connection.query('START TRANSACTION', function (err, rows) {
-    //     connection.query(query, [data.userName, data.groupName], (error, result) => {
-    //       if (error) throw error;
-    //       console.log(result);
-    //       //TODO socket room?
-    //       socket.leave(data.groupName);
-    //       callback({status:"SUCCESS", result:result});
-    //       //io.to(data.groupName).emit("leaveGroup", data);
-    //       console.log('Leave group success!!!');
-    //     });
-    //   });
-    //   connection.query('COMMIT', function (err, rows) {
-    //     connection.release();
-    //   });
-    // });
-
     connection.query(query, [data.userName, data.groupName], (error, result) => {
       if (error) throw error
       console.log(result);
@@ -185,23 +99,7 @@ io.on('connection', function (socket) {
 
   socket.on('getAllGroup', function (data, callback) {
     console.log("Getting all groups ");
-    // let searchResults = [];
     let query = 'select * from group_';
-
-    // connectionPool.getConnection(function (err, connection) {
-    //   connection.query('START TRANSACTION', function (err, rows) {
-    //     connection.query(query, [], (error, result) => {
-    //       if (error) throw error;
-    //       console.log(result);
-    //       searchResults = result;
-    //       callback({status:"SUCCESS", result:result});
-    //       console.log('get all group success!!!');
-    //     });
-    //   });
-    //   connection.query('COMMIT', function (err, rows) {
-    //     connection.release();
-    //   });
-    // });
 
     connection.query(query, [], (error, result) => {
       if (error) throw error
@@ -213,26 +111,7 @@ io.on('connection', function (socket) {
 
   socket.on('getJoinedGroup', function (data, callback) {
     console.log("Getting joined groups " + data.userName);
-    // let searchResults = [];
     let query = 'select join_.groupname from join_ where username=?';
-
-    // connectionPool.getConnection(function (err, connection) {
-    //   connection.query('START TRANSACTION', function (err, rows) {
-    //     connection.query(query, [data.userName], (error, result) => {
-    //       if (error) throw error;
-    //       console.log(result);
-    //       // searchResults = result;
-    //       callback({status:"SUCCESS", result:result});
-    //       //TODO socket room?
-    //       // io.to(data.groupName).emit("getJoinedGroup", JSON.parse(JSON.stringify(searchResults)));
-    //       console.log('get joined group success!!!');
-    //     });
-    //   });
-    //   connection.query('COMMIT', function (err, rows) {
-    //     connection.release();
-    //   });
-    // });
-
 
     connection.query(query, [data.userName], (error, result) => {
       if (error) throw error
@@ -251,22 +130,6 @@ io.on('connection', function (socket) {
     //inset to table 
     let query = 'INSERT INTO message(content, time_stamp, username, groupname) VALUES (?,?,?,?)'
 
-    // connectionPool.getConnection(function (err, connection) {
-    //   connection.query('START TRANSACTION', function (err, rows) {
-    //     connection.query(query, [msg.message, mysqlTimestamp, msg.userName, msg.groupName], (error, result) => {
-    //       if (error) throw error;
-    //       console.log(result);
-    //       callback({status:"SUCCESS", result:result});
-    //       console.log('send message success!!!');
-    //     });
-    //   });
-    //   connection.query('COMMIT', function (err, rows) {
-    //     connection.release();
-    //   });
-    // });
-
-
-
     connection.query(query, [msg.message, mysqlTimestamp, msg.userName, msg.groupName], function (err, results) {
       if (err) throw err
       //if inserted then ok
@@ -278,7 +141,17 @@ io.on('connection', function (socket) {
 
   })
 
+  socket.on('getGroupChat', function (data, callback) {
+    console.log("Getting group chat" + data.groupName + " " + data.ack);
+    let query = 'select * from message where msg_ID>? and groupname=?';
 
+    connection.query(query, [data.ack, data.groupName], (error, result) => {
+      if (error) throw error
+      console.log(result);
+      callback({ status: "SUCCESS", result: result });
+      console.log('Get group chat success!!!');
+    });
+  })
 
   socket.on('disconnect', function () {
     console.log('client disconnect...', socket.id)
