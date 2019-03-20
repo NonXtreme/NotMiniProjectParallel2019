@@ -6,6 +6,8 @@ const io = require('socket.io')(http);
 const mysql = require('mysql');
 const config = require('./config/dbconnect');
 const path = require('path');
+const moment = require('moment');
+
 const connection = mysql.createConnection({
   host: 'localhost',
   port: 3306,
@@ -130,7 +132,7 @@ io.on('connection', function (socket) {
     //inset to table 
     let query = 'INSERT INTO message(content, time_stamp, username, groupname) VALUES (?,?,?,?)'
 
-    connection.query(query, [msg.message, mysqlTimestamp, msg.userName, msg.groupName], function (err, results) {
+    connection.query(query, [msg.message, mysqlTimestamp, msg.userName, msg.groupName], function (err, result) {
       if (err) throw err
       //if inserted then ok
       console.log(result);
