@@ -68,6 +68,7 @@
     var ack = {}
     var chat = {}
     var unreadCount = {}
+    var requestingJoin = false
       setInterval(updateGroupList,3000)
       setInterval(updateGroupChat,3000)
       socket.on('connect', (e) => {
@@ -82,7 +83,7 @@
          if(key === "") return 
          if(value === true)  //for joined groups
          {
-            $('#groupListResult').append(`<div><span style="cursor:pointer; border:1px solid black; padding:5px; margin:5px;" onclick="selectGroup('${key}')"> ${key}(${unreadCount[key]}) </span><span style="cursor:pointer;" class="float-right" onclick="leaveGroup(${key})"> Leave Group </span></div>`)
+            $('#groupListResult').append(`<div><span style="cursor:pointer; border:1px solid black; padding:5px; margin:5px;" onclick="selectGroup('${key}')"> ${key}(${unreadCount[key]}) </span><span style="cursor:pointer;" class="float-right" onclick="leaveGroup('${key}')"> Leave Group </span></div>`)
          }
          else  //for non-joined groups
          {
@@ -132,7 +133,8 @@
 
       function updateGroupChat(){
         if(userName===null)return
-        console.log("chat", chat)
+        if(requestingJoin === false) $('#chatArea').html('')
+        console.log("joinedGroup", joinedGroup)
         joinedGroup.forEach(gid_=>{
           let gid = gid_
           if(ack[gid] === undefined) ack[gid]=-1
@@ -146,7 +148,7 @@
               if(y.message_id <= ack[gid]) return
               chat[gid].push(y)  
               ack[gid]= y.message_id
-              if(gid === groupName) render(y)
+              if(gid === groupName && requestingJoin === false) render(y)
               else
               {
                 unreadCount[gid]++;
@@ -180,13 +182,11 @@
         unreadCount[gid] = 0;
       }
       
-      function requestJoinGroup(gid)
-      {
-         $('#groupNameResult').html('Join Group ${gid}')
-         $('#chatArea').html(`<div class="d-flex flex-column justify-content-center align-items-center h-100"><button class="btn btn-info btn-block" style="margin-top:10px; border:none !important; background-color:#BE7DB7!important;" onclick="joinGroup(${gid})">Join!</button></div>`)
-      }
-
       function joinGroup(gid){
+        console.log("groupID", gid)
+        joinedGroup.push(gid)
+        groupJoinedStatus[gid] = true
+        requestingJoin = false
         socket.emit('joinGroup', {
           userName: userName,
           groupName: gid
@@ -200,6 +200,16 @@
         selectGroup(gid)
       }
 
+      function requestJoinGroup(gid)
+      {
+         console.log("request to join", gid)
+         requestingJoin = true
+         $('#groupNameResult').html('Join Group')
+         $('#chatArea').html(`<div class="d-flex flex-column justify-content-center align-items-center h-100"><button class="btn btn-info btn-block" style="margin-top:10px; border:none !important; background-color:#BE7DB7!important;" onclick="joinGroup('${gid}')"> Join! </button></div>`)
+      }
+
+      
+
       function leaveGroup(gid){
         socket.emit('leaveGroup', {
           userName: userName,
@@ -209,14 +219,13 @@
           groupName = null
 
           $('#groupNameResult').html('-')
-          $('#chatArea').html(`<div class="d-flex flex-column justify-content-center align-items-center h-100">
-                <div style="font-size: 20em; color: #231C3B; font-size: 1.6em;">Select one of the groups from the list</div>
-              </div>`)
+          $('#chatArea').html(`<div class="d-flex flex-column justify-content-center align-items-center h-100"><div style="font-size: 20em; color: #231C3B; font-size: 1.6em;">Select one of the groups from the list</div></div>`)
         });
       }
 
       function sendMessage(){
         let message=$('#messageField').val()
+        console.log("Messages", message)
         if(message.length == 0) return;
         socket.emit('sendMessage', {
           userName: userName,
