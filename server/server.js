@@ -41,7 +41,7 @@ app.listen(3000, function (err) {
 io.on('connection', function (socket) {
 
 
-  socket.on('createGroup', function (data) {
+  socket.on('createGroup', function (data,callback) {
     console.log("Creating group " + data.groupID + " " + data.groupname);
     let query = 'INSERT INTO group_(group_ID,groupname) values(?,?)';
 
@@ -51,6 +51,7 @@ io.on('connection', function (socket) {
         connection.query(query, [data.groupID, data.groupname], (error, result) => {
           if (error) throw error;
           console.log(result);
+          callback({status:"SUCCESS", result:result});
           console.log('create group success!!!');
         });
       });
@@ -65,7 +66,7 @@ io.on('connection', function (socket) {
     // });
   })
 
-  socket.on('login', function (data) {
+  socket.on('login', function (data,callback) {
     console.log("Logging in " + data.userID);
     let query = 'INSERT INTO join_(user_ID,group_ID) values(?,?)';
 
@@ -74,7 +75,8 @@ io.on('connection', function (socket) {
         connection.query(query, [data.userID], (error, result) => {
           if (error) throw error;
           console.log(result);
-          console.log('create group success!!!');
+          callback({status:"SUCCESS", result:result});
+          console.log('Login success!!!');
         });
       });
       connection.query('COMMIT', function (err, rows) {
@@ -88,7 +90,7 @@ io.on('connection', function (socket) {
     // });
   })
 
-  socket.on('joinGroup', function (data) {
+  socket.on('joinGroup', function (data,callback) {
     console.log("Creating group " + data.userID + " " + data.groupID);
     let query = 'INSERT INTO join_(user_ID,group_ID) values(?,?)';
 
@@ -99,7 +101,8 @@ io.on('connection', function (socket) {
           console.log(result);
           //TODO socket room?
           socket.join(data.groupID);
-          io.to(data.groupID).emit("joinGroup", data);
+          callback({status:"SUCCESS", result:result});
+          // io.to(data.groupID).emit("joinGroup", data);
           console.log('Join group success!!!');
         });
       });
@@ -118,7 +121,7 @@ io.on('connection', function (socket) {
     // });
   })
 
-  socket.on('leaveGroup', function (data) {
+  socket.on('leaveGroup', function (data,callback) {
     console.log("Leaving group " + data.userID + " " + data.groupID);
     let query = 'DELETE FROM join_ WHERE user_ID=? and group_ID=?';
 
@@ -129,6 +132,7 @@ io.on('connection', function (socket) {
           console.log(result);
           //TODO socket room?
           socket.leave(data.groupID);
+          callback({status:"SUCCESS", result:result});
           //io.to(data.groupID).emit("leaveGroup", data);
           console.log('Leave group success!!!');
         });
@@ -146,7 +150,7 @@ io.on('connection', function (socket) {
     // });
   })
 
-  socket.on('getAllGroup', function () {
+  socket.on('getAllGroup', function (data,callback) {
     console.log("Getting all groups ");
     let searchResults = [];
     let query = 'select * from group_';
@@ -157,8 +161,7 @@ io.on('connection', function (socket) {
           if (error) throw error;
           console.log(result);
           searchResults = result;
-          //TODO socket room?
-          io.to(data.groupID).emit("getAllGroup", JSON.parse(JSON.stringify(searchResults)));
+          callback({status:"SUCCESS", result:result});
           console.log('get all group success!!!');
         });
       });
@@ -176,9 +179,9 @@ io.on('connection', function (socket) {
     // });
   })
 
-  socket.on('getJoinedGroup', function (data) {
+  socket.on('getJoinedGroup', function (data,callback) {
     console.log("Getting groups " + data.userID);
-    let searchResults = [];
+    // let searchResults = [];
     let query = 'select join_.group_ID,group_.groupname from join_,group_ where user_ID=?';
 
     connectionPool.getConnection(function (err, connection) {
@@ -186,9 +189,10 @@ io.on('connection', function (socket) {
         connection.query(query, [data.userID], (error, result) => {
           if (error) throw error;
           console.log(result);
-          searchResults = result;
+          // searchResults = result;
+          callback({status:"SUCCESS", result:result});
           //TODO socket room?
-          io.to(data.groupID).emit("getJoinedGroup", JSON.parse(JSON.stringify(searchResults)));
+          // io.to(data.groupID).emit("getJoinedGroup", JSON.parse(JSON.stringify(searchResults)));
           console.log('get joined group success!!!');
         });
       });
@@ -207,7 +211,7 @@ io.on('connection', function (socket) {
     // });
   })
 
-  socket.on('sendMessage', function (msg) {
+  socket.on('sendMessage', function (msg,callback) {
     //have msg.content msg.username msg.groupname msg.userID msg.group_ID
 
     // get time
@@ -221,10 +225,8 @@ io.on('connection', function (socket) {
         connection.query(query, [msg.message, mysqlTimestamp, msg.userID, msg.groupID], (error, result) => {
           if (error) throw error;
           console.log(result);
-          searchResults = result;
-          //TODO socket room?
-          io.to(data.groupID).emit("getJoinedGroup", JSON.parse(JSON.stringify(searchResults)));
-          console.log('get joined group success!!!');
+          callback({status:"SUCCESS", result:result});
+          console.log('send message success!!!');
         });
       });
       connection.query('COMMIT', function (err, rows) {
@@ -239,7 +241,7 @@ io.on('connection', function (socket) {
     //   //if inserted then ok
     // })
     //!!!!!!!!!!!!TO-DO will we use groupnaem or group_ID as a socket room????!!!!!!!!!!!!
-    io.to(msg.groupID).emit('sendMessage', msg.username + " : " + msg.message)
+    // io.to(msg.groupID).emit('sendMessage', msg.username + " : " + msg.message)
 
 
   })
