@@ -61,13 +61,13 @@
   <script>
     $("#enterUsernameModal").modal()
     var socket = io('ws://localhost');  //must be considered again //ip server 
-    var userID = null
-      var groupID = null
-      var joinedGroup = []
-      var groupJoinedStatus = {}
-      var ack = {}
-      var chat = {}
-      var unreadCount = {}
+    var userName = null
+    var groupName = null
+    var joinedGroup = []
+    var groupJoinedStatus = {}
+    var ack = {}
+    var chat = {}
+    var unreadCount = {}
       setInterval(updateGroupList,1000)
       setInterval(updateGroupChat,300)
       socket.on('connect', (e) => {
@@ -93,7 +93,7 @@
       }
        
       function updateGroupList(){
-        if(userID===null) return
+        if(userName===null) return
         
         socket.emit('getAllGroup', {
         },x=>{
@@ -104,7 +104,7 @@
         });
          
           socket.emit('getJoinedGroup', {
-          userID: userID,
+          userName: userName,
         },x=>{
           console.log(x)
           $('#myGroupResult').empty()
@@ -123,19 +123,19 @@
       function render(y) //generate messages
       {
         let d = new Date(y.message_timestamp)
-        $('#chatArea').append(`<div class="${y.message_sender==username?'my':'your'}">
+        $('#chatArea').append(`<div class="${y.message_sender==userName?'my':'your'}">
             <span class="username" style="font-weight:900">${y.message_sender} &nbsp;</span> <span class="message">${y.message_text}</span> <span class="timestamp">${d.toLocaleTimeString()}</span>
           </div>`)
         $('#chatArea').animate({scrollTop: 999999999999999},30)
       }
 
       function updateGroupChat(){
-        if(userID===null)return
+        if(userName===null)return
         joinedGroup.forEach(gid_=>{
           let gid = gid_
           if(ack[gid] === undefined) ack[gid]=-1
           socket.emit('getGroupChat', {
-            groupID: gid,
+            groupName: gid,
             ack: ack[gid]
           },x=>{
             if(chat[gid] === undefined) chat[gid]=[]
@@ -144,7 +144,7 @@
               if(y.message_id <= ack[gid]) return
               chat[gid].push(y)  
               ack[gid]= y.message_id
-              if(gid === groupID) render(y)
+              if(gid === groupName) render(y)
               else
               {
                 unreadCount[gid]++;
@@ -157,8 +157,8 @@
       function createGroup(){
         let gid=$('#groupNameField').val()
         socket.emit('createGroup', {
-          groupID: name,
-          userID: userID
+          groupName: name,
+          userName: userName
         },x=>{
           console.log(x)
           ack[gid] = -1
@@ -171,7 +171,7 @@
       }
       
       function selectGroup(gid){
-        groupID = gid
+        groupName = gid
         $('#chatArea').html('')
         chat[gid].forEach(x=>render(x))
         $('#groupNameResult').html(gid)
@@ -186,8 +186,8 @@
 
       function joinGroup(gid){
         socket.emit('joinGroup', {
-          userID: userID,
-          groupID: gid
+          userName: userName,
+          groupName: gid
         },x=>{
           console.log(x)
           ack[gid] = -1
@@ -200,11 +200,11 @@
 
       function leaveGroup(gid){
         socket.emit('leaveGroup', {
-          userID: userID,
-          groupID: gid
+          userName: userName,
+          groupName: gid
         },x=>{
           console.log(x)
-          groupID = null
+          groupName = null
 
           $('#groupNameResult').html('-')
           $('#chatArea').html(`<div class="d-flex flex-column justify-content-center align-items-center h-100">
@@ -217,9 +217,9 @@
         let message=$('#messageField').val()
         if(message.length == 0) return;
         socket.emit('sendMessage', {
-          userID: userID,
+          userName: userName,
           message: message,
-          groupID: groupID
+          groupName: groupName
         },x=>{
           console.log(x)
           $('#messageField').val('')
@@ -227,10 +227,10 @@
       }
 
       function login() {
-        userID = $("#usernameField").val();
-        $("#usernameSpan").html(userID);
+        userName = $("#usernameField").val();
+        $("#usernameSpan").html(userName);
         socket.emit('login', {
-          userID: userID,
+          userName: userName,
         },x=>{
           console.log(x)
         });
