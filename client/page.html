@@ -32,8 +32,7 @@
       <div class="row" style="flex-basis: 95%;">
         <div class="col-md-3 sidebar">
           <h4>Group List</h4>
-          <div id="myGroupResult"></div>
-          <script>displayGroups()</script>
+          <div id="groupListResult"></div>
           <input type="text" id="groupNameField" name="gn" placeholder="enter name here...">
           <button class="btn btn-info btn-block" onclick="createGroup()">Add group</button>
         </div>
@@ -155,14 +154,18 @@
       }
 
       function createGroup(){
-        let name=$('#groupNameField').val()
+        let gid=$('#groupNameField').val()
         socket.emit('createGroup', {
           groupID: name,
           userID: userID
         },x=>{
           console.log(x)
+          ack[gid] = -1
+          chat[gid] = []
+          unreadCount[gid]= 0
         });
         updateGroupList()
+        console.log("group created!")
         selectGroup(gid)
       }
       
