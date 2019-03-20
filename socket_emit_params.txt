@@ -1,0 +1,23 @@
+action : 'getAllGroup'
+No params
+
+action : 'getJoinedGroup'
+params : userID
+
+action : 'getGroupChat'
+params : groupID, ack
+
+action : 'createGroup'
+params : groupID, userID
+
+action : 'joinGroup'
+params : userID, groupID
+
+action : 'leaveGroup'
+params : userID, groupID
+
+action : 'sendMessage'
+params : userID, message, groupID
+
+action : 'login'
+params : userID

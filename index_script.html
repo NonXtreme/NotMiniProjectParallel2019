@@ -35,8 +35,7 @@
     function updateGroupList(){
     	if(username===null) return
     	
-    	socket.emit('request', {
-        action:'getAllGroup',
+    	socket.emit('getAllGroup', {
       },x=>{
         console.log(x)
         x.result.map(y=>y['group_id']).forEach(y=>{
@@ -44,8 +43,7 @@
         })
       });
        
-        socket.emit('request', {
-        action:'getJoinedGroup',
+        socket.emit('getJoinedGroup', {
         userID: userID,
       },x=>{
         console.log(x)
@@ -76,8 +74,7 @@
       joinedGroup.forEach(gid_=>{
         let gid = gid_
         if(ack[gid] === undefined) ack[gid]=-1
-        socket.emit('request', {
-          action:'getGroupChat',
+        socket.emit('getGroupChat', {
           groupID: gid,
           ack: ack[gid]
         },x=>{
@@ -99,8 +96,7 @@
 
     function createGroup(){
       let name=$('#groupNameField').val()
-      socket.emit('request', {
-        action:'createGroup',
+      socket.emit('createGroup', {
         groupID: name,
         userID: userID
       },x=>{
@@ -125,8 +121,7 @@
     }
 
     function joinGroup(gid){
-      socket.emit('request', {
-        action:'joinGroup',
+      socket.emit('joinGroup', {
         userID: userID,
         groupID: gid
       },x=>{
@@ -140,8 +135,7 @@
     }
 
     function leaveGroup(gid){
-      socket.emit('request', {
-        action:'leaveGroup',
+      socket.emit('leaveGroup', {
         userID: userID,
         groupID: gid
       },x=>{
@@ -158,8 +152,7 @@
     function sendMessage(){
       let message=$('#messageField').val()
       if(message.length == 0) return;
-      socket.emit('request', {
-        action:'sendMessage',
+      socket.emit('sendMessage', {
         userID: userID,
         message: message,
         groupID: groupID
@@ -172,8 +165,7 @@
     function login() {
       userID = $("#usernameField").val();
       $("#usernameSpan").html(userID);
-      socket.emit('request', {
-        action:'login',
+      socket.emit('login', {
         userID: userID,
       },x=>{
         console.log(x)
