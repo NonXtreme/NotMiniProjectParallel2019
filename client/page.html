@@ -93,7 +93,7 @@
       }
        
       function updateGroupList(){
-        if(username===null) return
+        if(userID===null) return
         
         socket.emit('getAllGroup', {
         },x=>{
@@ -130,7 +130,7 @@
       }
 
       function updateGroupChat(){
-        if(username===null)return
+        if(userID===null)return
         joinedGroup.forEach(gid_=>{
           let gid = gid_
           if(ack[gid] === undefined) ack[gid]=-1
