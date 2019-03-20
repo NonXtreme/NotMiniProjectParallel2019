@@ -1,3 +1,5 @@
+const cors = require('cors');
+
 const app = require('express')();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
@@ -11,7 +13,6 @@ const connectionPool = mysql.createPool({
   password: config.database.password,
   database: 'parallel_db'
 })
-
 
 // function query(sql, params) {
 //   connectionPool.getConnection(function (err, connection) {
@@ -34,7 +35,7 @@ const connectionPool = mysql.createPool({
 app.get('/', function (req, res) {
   res.sendFile(path.join(__dirname,"../client/page.html"));
 });
-app.listen(3000, function (err) {
+http.listen(3000, function (err) {
   if (err) throw err
   console.log('listening on port 3000')
 })
