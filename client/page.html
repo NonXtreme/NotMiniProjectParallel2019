@@ -97,7 +97,7 @@
         if(userName===null) return
         socket.emit('getAllGroup', {
         },x=>{
-          console.log(x)
+          //console.log(x)
           x.result.map(y=>y['groupname']).forEach(y=>{
           //console.log("y = ",y)
           groupJoinedStatus[y] = false
@@ -107,7 +107,7 @@
           socket.emit('getJoinedGroup', {
           userName: userName,
         },x=>{
-          console.log(x)
+          //console.log(x)
           $('#myGroupResult').empty()
           joinedGroup = x.result.map(y=>y['groupname'])
           joinedGroup.forEach(y=>{
@@ -126,7 +126,7 @@
       function render(y) //generate messages
       {
         let d = new Date(y.time_stamp)
-        if(y.type_ === true)  //true for message, false for announcement(e.g. xxx has joined the group)
+        if(y.type_ === 1)  //true for message, false for announcement(e.g. xxx has joined the group)
         {
           $('#chatArea').append(`<div class="${y.username==userName?'my':'your'}">
             <span class="username" style="font-weight:900">${y.username} &nbsp;</span> <span class="message">${y.content}</span> <span class="timestamp">${d.toLocaleTimeString()}</span>
@@ -148,15 +148,17 @@
              read_[y.groupname] = y.last_read;
           })
         });
+        console.log("read", read_)
+        console.log("ack", ack)
       }
 
       function setReadChat(gid, msgID){
         read_[gid] = msgID
         socket.emit('setReadChat',{
           username: userName,
-          groupName: gID,
+          groupName: gid,
           msgID: msgID
-        },
+        },x=>{}
         )
       }
 
@@ -164,7 +166,7 @@
         if(userName===null) return
         console.log("joinedGroup", joinedGroup)
         console.log("Chats", chat)
-        getReadchat()
+        getReadChat()
         joinedGroup.forEach(gid_=>{
           let gid = gid_
           if(ack[gid] === undefined) ack[gid]=-1
@@ -177,14 +179,14 @@
             console.log(x.result)
             x.result.forEach(y=>{
               console.log(y)
-              console.log(y.msg_ID, ack[gid])
+              //console.log(y.msg_ID, ack[gid])
               if(y.msg_ID <= ack[gid]) return
               chat[gid].push(y)  
               ack[gid] = y.msg_ID
               if(gid === groupName && requestingJoin === false) 
               {
                 render(y)
-                setReadchat(gid, y.msg_ID)
+                setReadChat(gid, y.msg_ID)
               }
               else if(read_[gid] < y.msg_ID)
               {
@@ -216,7 +218,7 @@
         $('#chatArea').html('')
         chat[gid].forEach(x=>render(x))
         $('#groupNameResult').html(gid)
-        setReadchat(gid, ack[gid])
+        setReadChat(gid, ack[gid])
         unreadCount[gid] = 0;
       }
       
