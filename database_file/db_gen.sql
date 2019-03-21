@@ -12,6 +12,7 @@ create table group_(
 create table join_(
   username varchar(10),
   groupname varchar(10),
+  last_read int(6),
   constraint PK primary key (username, groupname),
   constraint FK_join1 foreign key (username)  references user_(username),
   constraint FK_join2 foreign key (groupname) references group_(groupname)
