@@ -77,7 +77,7 @@ io.on('connection', function (socket) {
 
   socket.on('joinGroup', function (data, callback) {
     console.log("Joining group " + data.userName + " " + data.groupName);
-    let query = 'INSERT INTO join_(username,groupname) values(?,?)';
+    let query = 'INSERT INTO join_(username,groupname,last_read) values(?,?,-1)';
     var mysqlTimestamp = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
     let query2= 'INSERT INTO message(content, time_stamp, username, groupname,type_) VALUES (?,?,?,?,0)'
     connection.query(query, [data.userName, data.groupName], (error, result) => {
