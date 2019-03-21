@@ -155,7 +155,7 @@
       function setReadChat(gid, msgID){
         read_[gid] = msgID
         socket.emit('setReadChat',{
-          username: userName,
+          userName: userName,
           groupName: gid,
           msgID: msgID
         },x=>{}
