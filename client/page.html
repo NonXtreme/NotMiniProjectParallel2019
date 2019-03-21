@@ -2,7 +2,9 @@
 <html>
 <head>
   <title>CHAT</title>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" crossorigin="anonymous">
+  <!link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.0/css/all.css" integrity="sha384-Mmxa0mLqhmOeaE8vgOSbKacftZcsNYDjQzuCOm6D02luYSzBG8vpaOykv9lFQ51Y" crossorigin="anonymous">
+  <link href="https://stackpath.bootstrapcdn.com/bootswatch/4.3.1/darkly/bootstrap.min.css" rel="stylesheet" integrity="sha384-w+8Gqjk9Cuo6XH9HKHG5t5I1VR4YBNdPt/29vwgfZR485eoEJZ8rJRbm3TR32P6k" crossorigin="anonymous">
 
   <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" crossorigin="anonymous"></script>
@@ -37,7 +39,9 @@
       <div class="row" style="flex-basis: 95%;">
         <div class="col-md-3 sidebar">
           <h4>Group List</h4>
-          <div id="groupListResult"></div>
+          <ul class="list-group">
+              <div id="groupListResult"></div>
+          </ul>
           <input type="text" id="groupNameField" name="gn" placeholder="enter name here...">
           <button class="btn btn-info btn-block" onclick="createGroup()">Add group</button>
         </div>
@@ -84,11 +88,24 @@
          if(key === "") return 
          if(value === true)  //for joined groups
          {
-            $('#groupListResult').append(`<div><span style="cursor:pointer; border:1px solid black; padding:5px; margin:5px;" onclick="selectGroup('${key}')"> ${key}(${unreadCount[key]}) </span><span style="cursor:pointer;" class="float-right" onclick="leaveGroup('${key}')"> Leave Group </span></div>`)
+            $('#groupListResult').append(`
+              <li onclick="selectGroup('${key}')" class="list-group-item d-flex justify-content-between align-items-center">
+                     <div>
+                       ${key}
+                      <span style="margin-left:10px" class="badge badge-primary badge-pill">${unreadCount[key]}</span>
+                     </div>
+                     
+                    <i onclick="leaveGroup('${key}')" class="fas fa-times-circle"></i>
+                </li>
+              `)
          }
          else  //for non-joined groups
          {
-            $('#groupListResult').append(`<div style="cursor:pointer; border:1px solid black; padding:5px; margin:5px;" onclick="requestJoinGroup('${key}')"> ${key} </div>`)
+            $('#groupListResult').append(`
+              <li onclick="requestJoinGroup('${key}')" class="list-group-item d-flex justify-content-between align-items-center">
+                <div> ${key} </div>
+                <i onclick="requestJoinGroup('${key}')" class="fas fa-plus-circle"></i>
+              </li>`)
          } 
         });
       }
