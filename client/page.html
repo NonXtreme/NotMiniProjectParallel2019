@@ -126,9 +126,16 @@
       function render(y) //generate messages
       {
         let d = new Date(y.time_stamp)
-        $('#chatArea').append(`<div class="${y.username==userName?'my':'your'}">
+        if(y.type_ === true)  //true for message, false for announcement(e.g. xxx has joined the group)
+        {
+          $('#chatArea').append(`<div class="${y.username==userName?'my':'your'}">
             <span class="username" style="font-weight:900">${y.username} &nbsp;</span> <span class="message">${y.content}</span> <span class="timestamp">${d.toLocaleTimeString()}</span>
           </div>`)
+        }
+        else
+        {
+          $('#chatArea').append(`<div class="chatAnnounce">${y.content}</div>`)
+        }
         $('#chatArea').animate({scrollTop: 999999999999999},30)
       }
 

@@ -21,3 +21,9 @@ params : userName, message, groupName
 
 action : 'login'
 params : userName
+
+action : 'getReadChat'
+params : userName
+
+action : 'setReadChat'
+params : userName, groupname, msgID
