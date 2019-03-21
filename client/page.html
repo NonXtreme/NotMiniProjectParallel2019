@@ -2,6 +2,45 @@
 <html>
 <head>
   <title>CHAT</title>
+  <style>
+  html,body{
+    height: 100%;
+  }
+  hr {
+    height: 8px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color:#666;
+    border: 0 none;
+    margin-top: 100px;
+    margin-bottom:100px;
+  }
+  #chatt{
+    max-height: 100%;
+  }
+  #typing{
+    margin-bottom: 10px;
+  }
+  #chatArea{
+    max-height: 100%;
+    max-width: 100%;
+    height: 100%;
+    overflow-y: auto;
+  }
+  #joinbtn{
+    width: 60%;
+  }
+  .username{
+    font-size: 1em;
+  }
+  .message{
+    font-size: 1.3em;
+  }
+  #messageField{
+
+  }
+  </style>
+
   <!link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" crossorigin="anonymous">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.0/css/all.css" integrity="sha384-Mmxa0mLqhmOeaE8vgOSbKacftZcsNYDjQzuCOm6D02luYSzBG8vpaOykv9lFQ51Y" crossorigin="anonymous">
   <link href="https://stackpath.bootstrapcdn.com/bootswatch/4.3.1/darkly/bootstrap.min.css" rel="stylesheet" integrity="sha384-w+8Gqjk9Cuo6XH9HKHG5t5I1VR4YBNdPt/29vwgfZR485eoEJZ8rJRbm3TR32P6k" crossorigin="anonymous">
@@ -11,13 +50,14 @@
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.0/socket.io.js" crossorigin="anonymous"></script>
 </head>
+
 <body>
   <div class="modal" tabindex="-1" role="dialog" id="enterUsernameModal">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Enter username</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <button type="button" class="btn btn-outline-danger" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
@@ -31,7 +71,7 @@
       </div>
     </div>
 
-    <div class=" d-flex flex-column h-100">
+    <div class=" d-flex flex-column h-100  justify-content-start">
       <div class="d-flex toolbar" style="flex: 0 5%">
         <div class="logo">Welcome, <span id="usernameSpan"></span></div>
         <div class="ml-auto">Status: <span id="statusSpan">NO</span> </div>
@@ -41,21 +81,27 @@
           <h4>Group List</h4>
           <ul class="list-group">
               <div id="groupListResult"></div>
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <input class="form-control" type="text" id="groupNameField" name="gn" placeholder="Create new group here...">
+                </div>
+                <button class="btn btn-primary btn-sm" onclick="createGroup()">Add group</button>
+              </li>
           </ul>
-          <input type="text" id="groupNameField" name="gn" placeholder="enter name here...">
-          <button class="btn btn-info btn-block" onclick="createGroup()">Add group</button>
         </div>
-        <div class="col-md-9 d-flex flex-column">
+
+        <div class="col-md-9 d-flex flex-column" id="chatt">
           <h4><strong id="groupNameResult">Group Name</strong></h4>
+
           <div id="chatArea" class="clearfix flex-grow-1 chatStyle">
             <div class="d-flex flex-column justify-content-center align-items-center h-100">
-              <div style="font-size: 20em; color: #231C3B; font-size: 1.6em;">Select one of the groups from the list</div>
+              <div style="font-size: 20em; font-size: 1.6em;">Select one of the groups from the list</div>
             </div>
-            
           </div>
-          <div class="d-flex">
-            <input type="text" class="flex-grow-1" onkeydown="sendMessage0(event)" id="messageField" placeholder="Type here...">
-            <button class="btn btn-success btn-lg buttonStyle" style="background-color:#BE7DB7!important; border: none!important;" onclick="sendMessage()">Send</button>
+
+          <div id="typing" class="list-group-item d-flex justify-content-between align-items-center">
+            <input type="text" class="form-control" onkeydown="sendMessage0(event)" id="messageField" placeholder="Type here...">
+            <button class="btn btn-success" onclick="sendMessage()">Send</button>
           </div>
         </div>
       </div>
@@ -95,16 +141,16 @@
                       <span style="margin-left:10px" class="badge badge-primary badge-pill">${unreadCount[key]}</span>
                      </div>
                      
-                    <i onclick="leaveGroup('${key}')" class="fas fa-times-circle"></i>
+                    <i onclick="leaveGroup('${key}')" class="fas fa-times-circle fa-lg"></i>
                 </li>
-              `)
+              `)  
          }
          else  //for non-joined groups
          {
             $('#groupListResult').append(`
               <li onclick="requestJoinGroup('${key}')" class="list-group-item d-flex justify-content-between align-items-center">
                 <div> ${key} </div>
-                <i onclick="requestJoinGroup('${key}')" class="fas fa-plus-circle"></i>
+                <i onclick="requestJoinGroup('${key}')" class="fas fa-plus-circle fa-lg"></i>
               </li>`)
          } 
         });
@@ -145,13 +191,26 @@
         let d = new Date(y.time_stamp)
         if(y.type_ === 1)  //true for message, false for announcement(e.g. xxx has joined the group)
         {
-          $('#chatArea').append(`<div class="${y.username==userName?'my':'your'}">
-            <span class="username" style="font-weight:900">${y.username} &nbsp;</span> <span class="message">${y.content}</span> <span class="timestamp">${d.toLocaleTimeString()}</span>
+          $('#chatArea').append(`
+            <div class="${y.username==userName?'my':'your'}">
+            
+            <div style="margin-left:25px" class="d-flex justify-content-between align-items-center">
+            <div>
+              <span class="username">${y.username} &nbsp; : </span> 
+              <span style="margin-left:25px" class="message">${y.content}</span> 
+            </div>
+            <span style="margin-right:25px" class="timestamp">${d.toLocaleTimeString()}</span>
+            </div>
+            <hr>
           </div>`)
         }
         else
         {
-          $('#chatArea').append(`<div class="chatAnnounce">${y.content}</div>`)
+          $('#chatArea').append(`
+            <div class="chatAnnounce">
+            <small class="text-muted">${y.content}</small>
+            
+            </div>`)
         }
         $('#chatArea').animate({scrollTop: 999999999999999},30)
       }
@@ -261,8 +320,11 @@
       {
          console.log("request to join", gid)
          requestingJoin = true
-         $('#groupNameResult').html('Join Group')
-         $('#chatArea').html(`<div class="d-flex flex-column justify-content-center align-items-center h-100"><button class="btn btn-info btn-block" style="margin-top:10px; border:none !important; background-color:#BE7DB7!important;" onclick="joinGroup('${gid}')"> Join! </button></div>`)
+         $('#groupNameResult').html(`Join Group>>  ${gid} `)
+         $('#chatArea').html(`
+          <div class="d-flex flex-column justify-content-center align-items-center h-100">
+            <button id="joinbtn" class="btn btn-primary btn-lg btn-block" onclick="joinGroup('${gid}')"> Join! </button>
+          </div>`)
       }
 
       
@@ -276,7 +338,7 @@
           groupName = null
 
           $('#groupNameResult').html('-')
-          $('#chatArea').html(`<div class="d-flex flex-column justify-content-center align-items-center h-100"><div style="font-size: 20em; color: #231C3B; font-size: 1.6em;">Select one of the groups from the list</div></div>`)
+          $('#chatArea').html(`<div class="d-flex flex-column justify-content-center align-items-center h-100"><div style="font-size: 20em; font-size: 1.6em;">Select one of the groups from the list</div></div>`)
         });
       }
 
