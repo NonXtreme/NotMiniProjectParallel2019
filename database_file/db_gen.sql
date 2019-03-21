@@ -23,6 +23,7 @@ create table message(
   time_stamp timestamp,
   username varchar(10),
   groupname varchar(10),
+  type_ boolean,
   constraint FK_msg1 foreign key (username)  references user_(username),
   constraint FK_msg2 foreign key (groupname) references group_(groupname)
 );

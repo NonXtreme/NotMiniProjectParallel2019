@@ -78,10 +78,16 @@ io.on('connection', function (socket) {
   socket.on('joinGroup', function (data, callback) {
     console.log("Joining group " + data.userName + " " + data.groupName);
     let query = 'INSERT INTO join_(username,groupname) values(?,?)';
-
+    var mysqlTimestamp = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+    let query2= 'INSERT INTO message(content, time_stamp, username, groupname,type_) VALUES (?,?,?,?,0)'
     connection.query(query, [data.userName, data.groupName], (error, result) => {
       if (error) throw error
       console.log(result);
+      let message="User "+data.userName+" has joined the group.";
+      connection.query(query2, [message, mysqlTimestamp, data.userName, data.groupName], function (err, result) {
+        if (err) throw err
+        console.log(result);
+      })
       socket.join(data.groupName);
       callback({ status: "SUCCESS", result: result });
       console.log('Join group success!!!');
@@ -91,10 +97,19 @@ io.on('connection', function (socket) {
   socket.on('leaveGroup', function (data, callback) {
     console.log("Leaving group " + data.userName + " " + data.groupName);
     let query = 'DELETE FROM join_ WHERE username=? and groupname=?';
+    var mysqlTimestamp = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
+    let query2= 'INSERT INTO message(content, time_stamp, username, groupname,type_) VALUES (?,?,?,?,0)'
 
     connection.query(query, [data.userName, data.groupName], (error, result) => {
       if (error) throw error
       console.log(result);
+
+      let message="User "+data.userName+" has left the group.";
+      connection.query(query2, [message, mysqlTimestamp, data.userName, data.groupName], function (err, result) {
+        if (err) throw err
+        console.log(result);
+      })
+
       socket.leave(data.groupName);
       callback({ status: "SUCCESS", result: result });
       console.log('Leave group success!!!');
@@ -132,7 +147,7 @@ io.on('connection', function (socket) {
     var mysqlTimestamp = moment(Date.now()).format('YYYY-MM-DD HH:mm:ss');
 
     //inset to table 
-    let query = 'INSERT INTO message(content, time_stamp, username, groupname) VALUES (?,?,?,?)'
+    let query = 'INSERT INTO message(content, time_stamp, username, groupname,type_) VALUES (?,?,?,?,1)'
 
     connection.query(query, [msg.message, mysqlTimestamp, msg.userName, msg.groupName], function (err, result) {
       if (err) throw err
@@ -154,6 +169,30 @@ io.on('connection', function (socket) {
       console.log(result);
       callback({ status: "SUCCESS", result: result });
       console.log('Get group chat success!!!');
+    });
+  })
+
+  socket.on('getReadChat', function (data, callback) {
+    console.log("Getting read chat" + data.userName);
+    let query = 'select * from join_ where username=?';
+
+    connection.query(query, [data.userName], (error, result) => {
+      if (error) throw error
+      console.log(result);
+      callback({ status: "SUCCESS", result: result });
+      console.log('Get read chat success!!!');
+    });
+  })
+
+  socket.on('setReadChat', function (data, callback) {
+    console.log("Setting read chat" + data.msgID + " " + data.userName + " " + data.groupName);
+    let query = 'update join_ set last_read=? where username=? and groupname=?';
+
+    connection.query(query, [data.msgID, data.userName, data.groupName], (error, result) => {
+      if (error) throw error
+      console.log(result);
+      callback({ status: "SUCCESS", result: result });
+      console.log('Set read chat success!!!');
     });
   })
 
