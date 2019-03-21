@@ -66,6 +66,7 @@
     var joinedGroup = []
     var groupJoinedStatus = {}
     var ack = {}
+    var read_ = {}
     var chat = {}
     var unreadCount = {}
     var requestingJoin = false
@@ -131,13 +132,36 @@
         $('#chatArea').animate({scrollTop: 999999999999999},30)
       }
 
+     
+      function getReadChat(){
+        socket.emit('getReadChat',{  
+          userName: userName;     
+        },x=>{
+          x.result.forEach(y=>{
+             read_[y.groupname] = y.last_read;
+          })
+        });
+      }
+
+      function setReadChat(gid, msgID){
+        read_[gid] = msgID
+        socket.emit('setReadChat',{
+          username: userName,
+          groupName: gID,
+          msgID: msgID
+        },
+        )
+      }
+
       function updateGroupChat(){
         if(userName===null) return
         console.log("joinedGroup", joinedGroup)
         console.log("Chats", chat)
+        getReadchat()
         joinedGroup.forEach(gid_=>{
           let gid = gid_
           if(ack[gid] === undefined) ack[gid]=-1
+          if(read_[gid] === undefined) read_[gid]=-1
           socket.emit('getGroupChat', {
             groupName: gid,
             ack: ack[gid]
@@ -150,8 +174,12 @@
               if(y.msg_ID <= ack[gid]) return
               chat[gid].push(y)  
               ack[gid] = y.msg_ID
-              if(gid === groupName && requestingJoin === false) render(y)
-              else
+              if(gid === groupName && requestingJoin === false) 
+              {
+                render(y)
+                setReadchat(gid, y.msg_ID)
+              }
+              else if(read_[gid] < y.msg_ID)
               {
                 unreadCount[gid]++;
               }
@@ -181,6 +209,7 @@
         $('#chatArea').html('')
         chat[gid].forEach(x=>render(x))
         $('#groupNameResult').html(gid)
+        setReadchat(gid, ack[gid])
         unreadCount[gid] = 0;
       }
       
