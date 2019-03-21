@@ -142,7 +142,7 @@
      
       function getReadChat(){
         socket.emit('getReadChat',{  
-          userName: userName;     
+          userName: userName     
         },x=>{
           x.result.forEach(y=>{
              read_[y.groupname] = y.last_read;
