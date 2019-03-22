@@ -83,7 +83,7 @@
               <div id="groupListResult"></div>
               <li class="list-group-item d-flex justify-content-between align-items-center">
                 <div>
-                  <input class="form-control" type="text" id="groupNameField" name="gn" placeholder="Create new group here...">
+                  <input class="form-control" type="text" onkeydown="createGroup0(event)" id="groupNameField" name="gn" placeholder="Create group here...">
                 </div>
                 <button class="btn btn-primary btn-sm" onclick="createGroup()">Add group</button>
               </li>
@@ -377,6 +377,9 @@
     //press enter
     function sendMessage0(event){
       if (event.keyCode === 13) sendMessage()
+    }
+    function createGroup0(event){
+      if (event.keyCode === 13) createGroup()
     }
   </script>
 </html>
