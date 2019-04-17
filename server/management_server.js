@@ -113,7 +113,7 @@ app.delete('/allrooms' , (req, res) => {
   })
 })
 
-//////////////////////////////////////////room\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+//////////////////////////////////////////room\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 app.get('/room/:id', (req,res) => {
   let gname = req.params.id
@@ -234,5 +234,19 @@ app.delete('/room/:id', (req,res) => {
   })
 })
 
+///////////////////////////////////////////users\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+app.get('/users', (req, res) => {
+  console.log("get all rooom")
+  let query = 'select * from user_'
+  let user_list = []
+  connection.query(query, (err, result) => {
+    if(err) throw err
+    result.forEach(user => {
+      console.log(user)
+      user_list.push(user.username)
+    });
+    res.status(200).send(user_list)
+  })
+})
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
