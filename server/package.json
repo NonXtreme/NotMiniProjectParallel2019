@@ -10,10 +10,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.18.3",
     "cors": "^2.8.5",
     "express": "^4.16.4",
     "moment": "^2.24.0",
     "mysql": "^2.16.0",
+    "nodemon": "^1.18.11",
     "socket.io": "^2.2.0"
   }
 }
